@@ -1,8 +1,8 @@
 
-## 🌸 支持一下
+## ❤️ 支持一下
 
-感谢大家的支持与鼓励！你们的每一份赞赏，都是我继续优化项目的养分 💧
+你的支持是我最大的动力！
 
-| 微信 |
+| 微信赞赏 |
 | :---: |
-| <img src='../images/wechat-code.png' title='微信' width='200px' height='200px'  /> |
+| <img src='../images/wechat-code.png' title='微信赞赏' width='220px' height='220px'  /> |
