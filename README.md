@@ -62,31 +62,6 @@
 
 ---
 
-## 💖 赞助商
-
-<table>
-<tr>
-<td width="420px">
-<a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">
-  <img
-    src="./docs/sponsors/thordata.png"
-    alt="Thordata 是可靠且经济高效的代理服务提供商。注册即可免费领取 1GB 住宅代理和 2000 次 serp-api 调用" 
-    width="420"
-  />
-</a>
-</td>
-</tr>
-<tr>
-<td width="420px" align="center">
-<small>
-<a href="https://www.thordata.com/?ls=github&lk=My%20Fingerprint">Thordata</a> 是可靠且经济高效的代理服务提供商。注册即可免费领取 1GB 住宅代理和 2000 次 serp-api 调用。
-</small>
-</td>
-</tr>
-</table>
-
----
-
 <h5 align="center">
   <a href="#features">✨ 功能</a> |
   <a href="#fingerprint">🧬 指纹</a> |
