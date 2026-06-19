@@ -32,7 +32,7 @@ export const WeakFpConfigGroup = memo(() => {
   return fp ? <div key={String(!!config)}>
     {/* timezone */}
     <HookModeProvider obj={fp.other} name='timezone'>
-      <HookModeCard color='success'>
+      <HookModeCard color='success' isDescArray>
         <TimeZoneConfigItem />
       </HookModeCard>
     </HookModeProvider>

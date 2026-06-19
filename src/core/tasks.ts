@@ -547,6 +547,16 @@ export const hookTasks: HookTask[] = [
       const tzValue = useHookMode(conf.fp.other.timezone).value
       if (!tzValue) return;
 
+      if (tzValue.zone == null) {
+        logger.warn('timezone zone is null')
+        return;
+      }
+
+      if (tzValue.locales == null) {
+        logger.warn('timezone locales is null')
+        tzValue.locales = []
+      }
+
       const customFmt = createLongOffsetFormatter(tzValue.zone)
       const customOffsetStr = customFmt?.()
 
@@ -605,15 +615,23 @@ export const hookTasks: HookTask[] = [
         return !isNaN(v) && !isNaN(parseFloat(v));
       }
 
+      const useCustomLocales = (locales?: Intl.LocalesArgument) => {
+        if (!locales) return tzValue.locales;
+        if (typeof locales === 'string') return [locales, ...tzValue.locales];
+        if (Array.isArray(locales)) return [...locales, ...tzValue.locales];
+      }
+
       /* DateTimeFormat */
       useProxy(gthis.Intl, 'DateTimeFormat', {
         construct: (target, args: Parameters<typeof Intl.DateTimeFormat>, newTarget) => {
           notify('weak.timezone')
+          args[0] = useCustomLocales(args[0]);
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return new target(...args)
         },
         apply: (target, thisArg: Intl.DateTimeFormat, args: Parameters<typeof Intl.DateTimeFormat>) => {
           notify('weak.timezone')
+          args[0] = useCustomLocales(args[0]);
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return target.apply(thisArg, args)
         },
@@ -700,6 +718,7 @@ export const hookTasks: HookTask[] = [
       ], {
         apply: (target: any, thisArg: Date, args: Parameters<typeof Date.prototype.toLocaleString>) => {
           notify('weak.timezone')
+          args[0] = useCustomLocales(args[0]);;
           args[1] = Object.assign({ timeZone: tzValue.zone }, args[1]);
           return target.apply(thisArg, args);
         }

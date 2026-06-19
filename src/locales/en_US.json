@@ -119,7 +119,11 @@
       "hardwareConcurrency": "Number of logical processors.",
       "size": "Screen Size.",
       "depth": "Screen Color Depth.",
-      "timezone": "Browser Timezone. [More Timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+      "timezone": [
+        "Browser timezone, [more timezones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+        "- Timezone: IANA timezone, e.g. `America/New_York`",
+        "- Locales: e.g. `en-US`, multiple candidates can be provided, separated by commas"
+      ],
       "gpuInfo": "GPU graphics driver information.",
       "canvas": "Canvas fingerprinting detects device traits by analyzing subtle differences in how graphics are drawn.",
       "audio": "Audio fingerprinting identifies your device through unique patterns in audio signal processing.",
@@ -172,7 +176,9 @@
     "sub": {
       "tz": {
         "zone": "TimeZone",
-        "invalid": "Invalid TimeZone"
+        "locales": "Locales",
+        "invalid-zone": "Invalid IANA TimeZone",
+        "invalid-locales": "Invalid Locales"
       }
     }
   },

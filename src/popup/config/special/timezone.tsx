@@ -11,23 +11,58 @@ import { isCurrentlyDST, longOffsetToReadable, timeZoneToLongOffset } from "@/ut
 
 type OptionType = (string & {}) | HookType
 
+/**
+ * 验证语言环境值是否有效
+ */
+function validateLocale(locale: Intl.LocalesArgument) {
+  try {
+    new Intl.DateTimeFormat(locale);
+    return true;   // 有效
+  } catch (e) {
+    return false;  // 无效
+  }
+}
+
+/**
+ * 验证时区是否有效
+ */
+const validateTimeZone = (zone: string) => {
+  try {
+    Intl.DateTimeFormat('en-US', { timeZone: zone })
+    return true
+  } catch (e) {
+    return false
+  }
+}
+
+
 const fetchTimezones = sharedAsync(LocalApi.timezone)
 
 const TimeZoneConfigItem = ({ }: {}) => {
   const { t, i18n, asLang } = useI18n()
   const [isOpen, setIsOpen] = useState(false)
   const [localPreset, setLocalPreset] = useState<TimeZoneOption[]>([])
-  const [isInvalid, setIsInvalid] = useState(false)
+  const [isZoneInvalid, setIsZoneInvalid] = useState(false)
+  const [isLocalesInvalid, setIsLocalesInvalid] = useState(false)
 
   const { mode, value: modeValue = {}, version, setType, setValue } = useHookMode()
 
-  const currentTz = useMemo<TimeZoneInfo>(() => ({
-    zone: Intl.DateTimeFormat().resolvedOptions().timeZone
-  }), [])
+  const currentTz = useMemo<TimeZoneInfo>(() => {
+    const opts = Intl.DateTimeFormat().resolvedOptions();
+    return {
+      zone: opts.timeZone,
+      locales: [opts.locale],
+    }
+  }, [])
+
+  const defaultLocales = currentTz.locales.join(', ');
 
   useEffect(() => {
     if (modeValue?.zone) {
-      checkTimeZone(modeValue?.zone)
+      setIsZoneInvalid(!validateTimeZone(modeValue.zone))
+    }
+    if (modeValue?.locales) {
+      setIsLocalesInvalid(!modeValue.locales.every(validateLocale))
     }
   }, [version])
 
@@ -91,14 +126,7 @@ const TimeZoneConfigItem = ({ }: {}) => {
     }
   }
 
-  const checkTimeZone = (zone: string) => {
-    try {
-      Intl.DateTimeFormat('en-US', { timeZone: zone })
-      setIsInvalid(false)
-    } catch (e) {
-      setIsInvalid(true)
-    }
-  }
+  const currentOption = modeValue.key || mode.type;
 
   return <>
     <Select<OptionType>
@@ -106,13 +134,13 @@ const TimeZoneConfigItem = ({ }: {}) => {
       onOpenChange={setIsOpen}
       className={dotStyles.base}
       options={options}
-      value={modeValue.key || mode.type}
+      value={currentOption}
       onChange={onChange}
     />
     <HookModeCustom>
       <Form.Item label={t('item.sub.tz.zone')}>
         <Input
-          status={isInvalid ? 'error' : undefined}
+          status={isZoneInvalid ? 'error' : undefined}
           placeholder={currentTz.zone}
           value={modeValue.zone ?? currentTz.zone}
           onChange={({ target }) => setValue({
@@ -121,7 +149,20 @@ const TimeZoneConfigItem = ({ }: {}) => {
             zone: target.value || currentTz.zone
           })}
         />
-        {isInvalid && <p className="text-danger-500">{t('item.sub.tz.invalid')}</p>}
+        {isZoneInvalid && <p className="text-danger-500">{t('item.sub.tz.invalid-zone')}</p>}
+      </Form.Item>
+      <Form.Item key={currentOption} label={t('item.sub.tz.locales')}>
+        <Input
+          status={isLocalesInvalid ? 'error' : undefined}
+          placeholder={defaultLocales}
+          defaultValue={modeValue.locales?.join?.(', ') ?? defaultLocales}
+          onChange={({ target }) => setValue({
+            ...modeValue,
+            key: undefined,
+            locales: target.value ? target.value.split(',').map((v) => v.trim()).filter(Boolean) : currentTz.locales,
+          })}
+        />
+        {isLocalesInvalid && <p className="text-danger-500">{t('item.sub.tz.invalid-locales')}</p>}
       </Form.Item>
     </HookModeCustom>
   </>

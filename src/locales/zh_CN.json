@@ -122,7 +122,11 @@
       "hardwareConcurrency": "逻辑处理器数量",
       "size": "屏幕尺寸",
       "depth": "屏幕颜色深度",
-      "timezone": "浏览器时区，[更多时区](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+      "timezone": [
+        "浏览器时区，[更多时区](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones)",
+        "- 时区: IANA 时区，例如 `Asia/Shanghai`",
+        "- 语言环境: 例如 `zh-CN`, 可填多个候选值，用逗号分隔"
+      ],
       "gpuInfo": "GPU图形驱动信息",
       "canvas": "Canvas画布指纹，通过绘图行为差异获取设备特征。",
       "audio": "Audio音频指纹，通过音频信号处理获取设备特征。",
@@ -175,7 +179,9 @@
     "sub": {
       "tz": {
         "zone": "时区",
-        "invalid": "无效时区"
+        "locales": "语言环境",
+        "invalid-zone": "无效 IANA 时区",
+        "invalid-locales": "无效语言环境"
       }
     }
   },

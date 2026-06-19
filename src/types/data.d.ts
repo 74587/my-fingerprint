@@ -5,6 +5,7 @@ type SizeInfo = {
 
 type TimeZoneInfo = {
   zone: string
+  locales: string[]
 }
 
 type EquipmentInfo = {
