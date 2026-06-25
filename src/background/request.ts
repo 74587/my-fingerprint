@@ -12,9 +12,6 @@ const UA_NET_RULE_ID = 1
 
 const MEMORY = {
   browser: getBrowserInfo(),
-  configNonce: 0,
-  includeTabIds: undefined as number[] | undefined,
-  excludeTabIds: undefined as number[] | undefined,
 }
 
 const isHookNetRequest = (storage: LocalStorage) => {
