@@ -11,20 +11,10 @@ let mContent: LocalStorageContext | undefined
 
 type LocalStorageContext = {
   storage: LocalStorage
-  configNonce: number
-  policiesNonce: number
+  nonce: number
 }
 
 const randNonce = () => Math.floor(Math.random() * 1e9);
-
-/**
- * 格式化LocalStorage
- */
-const genStorageContent = (storage: LocalStorage): LocalStorageContext => ({
-  storage,
-  configNonce: randNonce(),
-  policiesNonce: randNonce(),
-})
 
 /**
  * 生成默认配置
@@ -167,7 +157,11 @@ export const initLocalStorage = sharedAsync(async () => {
   logManager.setLevel(_storage.config.prefs.logLevel)
 
   /** 其他 */
-  mContent = genStorageContent(_storage)
+  mContent = {
+    storage: _storage,
+    nonce: randNonce(),
+  }
+
   chrome.storage.local.set(_storage).then(() => {
     reRegisterScript()
     reRequestHeader()
@@ -231,7 +225,6 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
 
   if (v.config) {
     storage.config = deepMerge(storage.config, v.config)
-    ctx.configNonce = randNonce()
   }
 
   if (v.policies) {
@@ -239,7 +232,6 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
       ...storage.policies,
       ...v.policies,
     }
-    ctx.policiesNonce = randNonce()
   }
 
   onUpdateContext(ctx)
@@ -262,8 +254,6 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
     delete data.config.prefs;
     delete data.config.action?.fastInject;
     await updateContext({ config: data.config })
-
-    ctx.configNonce = randNonce()
     isUpdate = true
   }
 
@@ -273,8 +263,6 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
       data.policies?.whitelist,
       (data as any).whitelist,
     );
-
-    ctx.policiesNonce = randNonce()
     isUpdate = true
   }
 
@@ -284,8 +272,6 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
       data.policies?.blacklist,
       (data as any).blacklist,
     );
-
-    ctx.policiesNonce = randNonce()
     isUpdate = true
   }
 
@@ -295,8 +281,6 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
         isBlacklistMode: data.policies.isBlacklistMode
       }
     })
-
-    ctx.policiesNonce = randNonce()
     isUpdate = true
   }
 

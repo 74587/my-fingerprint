@@ -1,8 +1,8 @@
-import { getBrowser } from "@/utils/equipment"
 import { getLocalStorage } from "./storage"
 import { HookType } from '@/types/enum'
 import { isDefaultMode } from "@/utils/storage"
 import { logManager } from '@/utils/log';
+import { getBrowserInfo } from "@/utils/browser";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -11,7 +11,7 @@ type RuleHeader = chrome.declarativeNetRequest.ModifyHeaderInfo
 const UA_NET_RULE_ID = 1
 
 const MEMORY = {
-  browser: getBrowser(navigator.userAgent),
+  browser: getBrowserInfo(),
   configNonce: 0,
   includeTabIds: undefined as number[] | undefined,
   excludeTabIds: undefined as number[] | undefined,
@@ -25,9 +25,8 @@ const isHookNetRequest = (storage: LocalStorage) => {
   ])
 }
 
-const genUaRules = async ({ config }: LocalStorage): Promise<readonly RuleHeader[]> => {
+const genUaRules = ({ config }: LocalStorage): readonly RuleHeader[] => {
   const uaMode = config.fp.navigator.clientHints
-
   if (uaMode.type !== HookType.value) return [];
 
   const { ua, uaData } = uaMode.value;
@@ -106,71 +105,56 @@ const removeRules = async () => {
  * 刷新请求头
  */
 export const reRequestHeader = async (excludeTabId?: number, includeTabId?: number) => {
-  const { storage, configNonce } = await getLocalStorage()
+  const { storage } = await getLocalStorage()
 
   if (!storage.config.enable || !isHookNetRequest(storage)) {
     return await removeRules()
   }
 
-  const srs = await chrome.declarativeNetRequest.getSessionRules()
-
   /* 构建 Rules */
-  let rules: RuleHeader[] | undefined;
-  if (MEMORY.configNonce === configNonce) {
-    rules = srs[0]?.action?.requestHeaders
-  } else {
-    MEMORY.configNonce = configNonce
-    const uaRules = MEMORY.browser === 'firefox' ? [] : await genUaRules(storage)
-    const langRules = genLanguageRules(storage)
-    rules = [
-      ...uaRules,
-      ...langRules,
-    ]
-  }
+  const uaRules = MEMORY.browser.name === 'firefox' ? [] : genUaRules(storage);
+  const langRules = genLanguageRules(storage);
+  const rules = [
+    ...uaRules,
+    ...langRules,
+  ]
 
   if (!rules || rules.length === 0) {
     return await removeRules()
   }
 
+  const srs = await chrome.declarativeNetRequest.getSessionRules()
+  const prev = srs.find(r => r.id === UA_NET_RULE_ID)
+
   /* 构建 Condition */
   let condition: chrome.declarativeNetRequest.RuleCondition;
   const resourceTypes = Object.values(chrome.declarativeNetRequest.ResourceType)
+
   if (storage.policies.isBlacklistMode) {
     /* 黑名单模式 */
-    if (!MEMORY.includeTabIds) {
-      MEMORY.includeTabIds = srs[0]?.condition?.tabIds ?? []
-    }
+    const set = new Set(prev?.condition?.tabIds);
     if (includeTabId != null) {
-      MEMORY.includeTabIds.push(includeTabId)
-      MEMORY.includeTabIds = [...new Set(MEMORY.includeTabIds)]
+      set.add(includeTabId);
     }
-
-    condition = { resourceTypes }
-    if (storage.policies.blacklist.length > 0) {
-      condition.initiatorDomains = [...storage.policies.blacklist]
+    condition = {
+      resourceTypes,
+      initiatorDomains: storage.policies.blacklist.length > 0 ? [...storage.policies.blacklist] : undefined,
+      tabIds: set.size > 0 ? [...set] : undefined,
     }
-    if (MEMORY.includeTabIds.length > 0) {
-      condition.tabIds = [...MEMORY.includeTabIds]
-    }
+    // 黑名单模式下，如果没有任何条件，则删除规则
     if (!condition.initiatorDomains && !condition.tabIds) {
       return await removeRules()
     }
   } else {
     /* 白名单模式 */
-    if (!MEMORY.excludeTabIds) {
-      MEMORY.excludeTabIds = srs[0]?.condition?.excludedTabIds ?? []
-    }
+    const set = new Set(prev?.condition?.excludedTabIds);
     if (excludeTabId != null) {
-      MEMORY.excludeTabIds.push(excludeTabId)
-      MEMORY.excludeTabIds = [...new Set(MEMORY.excludeTabIds)]
+      set.add(excludeTabId);
     }
-
-    condition = { resourceTypes }
-    if (storage.policies.whitelist.length > 0) {
-      condition.excludedInitiatorDomains = [...storage.policies.whitelist]
-    }
-    if (MEMORY.excludeTabIds.length > 0) {
-      condition.excludedTabIds = [...MEMORY.excludeTabIds]
+    condition = {
+      resourceTypes,
+      excludedInitiatorDomains: storage.policies.whitelist.length > 0 ? [...storage.policies.whitelist] : undefined,
+      excludedTabIds: set.size > 0 ? [...set] : undefined,
     }
   }
 
