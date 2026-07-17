@@ -45,6 +45,7 @@ export const chromeManifest: ManifestV3Export = {
     'clipboardRead',
     'clipboardWrite',
     'privacy',
+    'alarms',
   ],
   optional_permissions: [
     'browsingData',
@@ -80,6 +81,7 @@ export const firefoxManifest: ManifestV3Export = {
     'clipboardRead',
     'clipboardWrite',
     'privacy',
+    'alarms',
   ],
   optional_permissions: [
     "userScripts",

@@ -18,6 +18,11 @@ type LocalStorageConfig = {
   // 操作
   action: {
     fastInject: boolean
+    ipAutoConfig: {
+      enable: boolean
+      enableTimezone: boolean
+      enableLanguages: boolean
+    }
   }
   // 输入
   input: {

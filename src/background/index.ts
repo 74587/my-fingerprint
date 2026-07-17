@@ -5,6 +5,7 @@ import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 import { removeBrowsingData } from "./browsing-data";
+import { executeIpAutoConfigAlarm } from "./ip-auto-config";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -156,5 +157,14 @@ chrome.permissions.onAdded.addListener((perms) => {
   logger.info('chrome.permissions.onAdded triggered:', perms)
   if (perms.permissions?.includes('userScripts')) {
     reRegisterScript()
+  }
+})
+
+/**
+ * 定时器
+ */
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'ip-auto-config') {
+    executeIpAutoConfigAlarm()
   }
 })
