@@ -5,67 +5,100 @@ import countryLanguages from "@/data/country_languages.json"
 
 const alarmName = "ip-auto-config"
 
-export const createIpAutoConfigAlarm = async () => {
+export const reIpAutoConfigAlarm = async () => {
   const { storage } = await getLocalStorage()
-  if (storage.config?.action?.ipAutoConfig?.enable) {
-    await chrome.alarms.create(alarmName, {
-      delayInMinutes: 1,
-      periodInMinutes: 1,
-    });
-  }
-}
-
-export const clearIpAutoConfigAlarm = async () => {
-  await chrome.alarms.clear(alarmName);
-}
-
-export const executeIpAutoConfigAlarm = async () => {
-  const { storage } = await getLocalStorage()
-
   const options = storage.config?.action?.ipAutoConfig ?? {};
-  if (!options.enable) return;
 
-  /* get data */
-  const ipData = await IpApi.getIp()
+  if (options.enable) {
+    const interval = options.intervalMin || 1;
+    const alarm = await chrome.alarms.get(alarmName)
 
-  let languages: string[] | undefined = undefined
-  if (ipData.countryCode) {
-    languages = (countryLanguages as any)[ipData.countryCode]
+    if (!alarm || alarm.periodInMinutes !== interval) {
+      await chrome.alarms.create(alarmName, {
+        delayInMinutes: interval,
+        periodInMinutes: interval,
+      });
+    }
   }
 
-  let timezone: string | undefined = undefined
-  if (ipData.timezone) {
-    timezone = ipData.timezone
-  }
+  reIpAutoConfig()
+}
 
-  /* handle config */
+export const reIpAutoConfig = async () => {
+  const { storage } = await getLocalStorage()
+
+  const fp = storage.config.fp
+  const ipAuto = storage.config.action.ipAutoConfig;
+
   let isUpdate = false
-  const fp = {} as DeepPartial<HookFingerprint>
+  const next = {} as DeepPartial<HookFingerprint>
 
-  if (options.enableLanguages && languages) {
-    fp.navigator = {
-      languages: {
-        type: HookType.value,
-        value: languages,
+  if (ipAuto.enable) {
+    /* Enable */
+    const ipData = await IpApi.getIp()
+
+    let languages: string[] | undefined = undefined
+    if (ipData.countryCode) {
+      languages = (countryLanguages as any)[ipData.countryCode]
+    }
+
+    let timezone: string | undefined = undefined
+    if (ipData.timezone) {
+      timezone = ipData.timezone
+    }
+
+    if (ipAuto.enableLanguages && languages) {
+      isUpdate = true
+      next.navigator = {
+        languages: {
+          type: HookType.value,
+          value: languages,
+          tag: alarmName,
+        }
       }
     }
-    isUpdate = true
-  }
 
-  if (options.enableTimezone && timezone && languages) {
-    fp.other = {
-      timezone: {
-        type: HookType.value,
-        value: {
-          zone: timezone,
-          locales: languages,
-        },
+    if (ipAuto.enableTimezone && timezone && languages) {
+      isUpdate = true
+      next.other = {
+        timezone: {
+          type: HookType.value,
+          value: {
+            zone: timezone,
+            locales: languages,
+          },
+          tag: alarmName,
+        }
       }
     }
-    isUpdate = true
+  } else {
+    /* Disable */
+    if (ipAuto.enableLanguages
+      && fp.navigator.languages.type === HookType.value
+      && fp.navigator.languages.tag === alarmName
+    ) {
+      isUpdate = true
+      next.navigator = {
+        languages: {
+          type: HookType.default,
+        }
+      }
+    }
+
+    if (ipAuto.enableTimezone
+      && fp.other.timezone.type === HookType.value
+      && fp.other.timezone.tag === alarmName
+    ) {
+      isUpdate = true
+      next.other = {
+        timezone: {
+          type: HookType.default,
+        }
+      }
+    }
   }
 
   if (isUpdate) {
-    updateContext({ config: { fp } })
+    updateContext({ config: { fp: next } })
   }
 }

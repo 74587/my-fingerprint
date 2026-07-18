@@ -5,7 +5,7 @@ import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 import { removeBrowsingData } from "./browsing-data";
-import { executeIpAutoConfigAlarm } from "./ip-auto-config";
+import { reIpAutoConfig, reIpAutoConfigAlarm } from "./ip-auto-config";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -38,7 +38,9 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage()
+  initLocalStorage().then(() => {
+    reIpAutoConfigAlarm()
+  })
 });
 
 /**
@@ -165,6 +167,6 @@ chrome.permissions.onAdded.addListener((perms) => {
  */
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'ip-auto-config') {
-    executeIpAutoConfigAlarm()
+    reIpAutoConfig()
   }
 })

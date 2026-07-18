@@ -20,6 +20,7 @@ type LocalStorageConfig = {
     fastInject: boolean
     ipAutoConfig: {
       enable: boolean
+      intervalMin: number
       enableTimezone: boolean
       enableLanguages: boolean
     }
