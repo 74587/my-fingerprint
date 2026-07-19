@@ -15,6 +15,7 @@ import { NoticePanel } from "./record";
 import PoliciesView from "./policies";
 
 import { logManager } from '@/utils/log';
+import { IpModulePanel } from "./ip";
 
 function Application() {
   const [t, i18n] = useTranslation()
@@ -127,9 +128,13 @@ function Application() {
         children: <PoliciesView msgApi={messageApi} />,
       },
       {
+        label: t('e.ip-module'),
+        children: <IpModulePanel />,
+      },
+      {
         label: t('e.more'),
         children: <MoreView />,
-      }
+      },
     ].map((item, index) => ({ ...item, key: String(index) }))
   }, [i18n.language, tab, isShowConfigBadge])
 

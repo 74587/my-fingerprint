@@ -2,12 +2,16 @@ import { IpApi } from "@/api/ip";
 import { getLocalStorage, updateContext } from "./storage";
 import { HookType } from '@/types/enum'
 import countryLanguages from "@/data/country_languages.json"
+import { sharedAsync } from "@/utils/timer";
+import { logManager } from "@/utils/log";
+
+const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 const alarmName = "ip-auto-config"
 
-export const reIpAutoConfigAlarm = async () => {
+export const reIpInfoAlarm = async () => {
   const { storage } = await getLocalStorage()
-  const options = storage.config?.action?.ipAutoConfig ?? {};
+  const options = storage.config?.action?.ipInfo ?? {};
 
   if (options.enable) {
     const interval = options.intervalMin || 1;
@@ -21,20 +25,22 @@ export const reIpAutoConfigAlarm = async () => {
     }
   }
 
-  reIpAutoConfig()
+  reIpInfo()
 }
 
-export const reIpAutoConfig = async () => {
+export const reIpInfo = sharedAsync(async () => {
   const { storage } = await getLocalStorage()
 
   const fp = storage.config.fp
-  const ipAuto = storage.config.action.ipAutoConfig;
+  const ipAuto = storage.config.action.ipInfo;
 
   let isUpdate = false
-  const next = {} as DeepPartial<HookFingerprint>
+  const nextFp = {} as DeepPartial<HookFingerprint>
+  const nextInput = {} as DeepPartial<LocalStorageConfig['input']>
 
   if (ipAuto.enable) {
     /* Enable */
+    isUpdate = true
     const ipData = await IpApi.getIp()
 
     let languages: string[] | undefined = undefined
@@ -47,9 +53,16 @@ export const reIpAutoConfig = async () => {
       timezone = ipData.timezone
     }
 
+    nextInput.ipInfo = {
+      ip: ipData.query,
+      countryCode: ipData.countryCode,
+      timezone: ipData.timezone,
+      languages,
+      createdAt: Date.now(),
+    }
+
     if (ipAuto.enableLanguages && languages) {
-      isUpdate = true
-      next.navigator = {
+      nextFp.navigator = {
         languages: {
           type: HookType.value,
           value: languages,
@@ -59,8 +72,7 @@ export const reIpAutoConfig = async () => {
     }
 
     if (ipAuto.enableTimezone && timezone && languages) {
-      isUpdate = true
-      next.other = {
+      nextFp.other = {
         timezone: {
           type: HookType.value,
           value: {
@@ -71,14 +83,21 @@ export const reIpAutoConfig = async () => {
         }
       }
     }
+
+    logger.info("ReIpInfo Enable", { isUpdate, nextFp, nextInput })
   } else {
     /* Disable */
+    if (nextInput.ipInfo) {
+      isUpdate = true
+      nextInput.ipInfo = null as any;
+    }
+
     if (ipAuto.enableLanguages
       && fp.navigator.languages.type === HookType.value
       && fp.navigator.languages.tag === alarmName
     ) {
       isUpdate = true
-      next.navigator = {
+      nextFp.navigator = {
         languages: {
           type: HookType.default,
         }
@@ -90,15 +109,24 @@ export const reIpAutoConfig = async () => {
       && fp.other.timezone.tag === alarmName
     ) {
       isUpdate = true
-      next.other = {
+      nextFp.other = {
         timezone: {
           type: HookType.default,
         }
       }
     }
+
+    logger.info("ReIpInfo Disable", { isUpdate, nextFp, nextInput })
   }
 
   if (isUpdate) {
-    updateContext({ config: { fp: next } })
+    updateContext({
+      config: {
+        fp: nextFp,
+        input: nextInput,
+      }
+    })
   }
-}
+
+  return nextInput.ipInfo as LocalStorageConfig['input']['ipInfo'];
+})

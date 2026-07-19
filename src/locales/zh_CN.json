@@ -28,7 +28,8 @@
     "seed": "种子",
     "more": "更多",
     "fp-record": "指纹",
-    "iframe-record": "内嵌框架"
+    "iframe-record": "内嵌框架",
+    "ip-module": "IP 模块"
   },
   "label": {
     "config-file": "配置文件",
@@ -107,7 +108,12 @@
       "theme": "主题",
       "log-level": "日志等级",
       "seed": "全局种子",
-      "fast-inject": "快速注入模式"
+      "fast-inject": "快速注入模式",
+      "ip-module": {
+        "enable": "开启",
+        "enable-languages": "自动配置语言",
+        "enable-timezone": "自动配置时区"
+      }
     },
     "desc": {
       "clientHints": [

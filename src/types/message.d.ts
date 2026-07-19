@@ -41,6 +41,9 @@ declare namespace BackgroundMessage {
     type: 'badge.set'
     text: string
     level: 1 | 2
+  } | {
+    type: 'ip.refresh'
+    $: LocalStorageConfig['input']['ipInfo']
   }
 
   type ResultField = '$'

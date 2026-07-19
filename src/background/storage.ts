@@ -57,11 +57,11 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       action: {
         fastInject: hasUserScripts() ? true : false,
-        ipAutoConfig: {
+        ipInfo: {
           enable: false,
           intervalMin: 1,
-          enableTimezone: false,
-          enableLanguages: false,
+          enableTimezone: true,
+          enableLanguages: true,
         },
       },
       input: {

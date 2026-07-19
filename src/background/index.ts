@@ -5,7 +5,7 @@ import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 import { removeBrowsingData } from "./browsing-data";
-import { reIpAutoConfig, reIpAutoConfigAlarm } from "./ip-auto-config";
+import { reIpInfo, reIpInfoAlarm } from "./ip-info";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -39,7 +39,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
  */
 chrome.runtime.onStartup.addListener(() => {
   initLocalStorage().then(() => {
-    reIpAutoConfigAlarm()
+    reIpInfoAlarm()
   })
 });
 
@@ -108,6 +108,12 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       setBadgeContent(tabId, msg.text, msg.level)
       return false;
     }
+    case 'ip.refresh': {
+      reIpInfo().then((v) => {
+        sendResponse<'ip.refresh'>(v)
+      })
+      return true
+    }
   }
 }) as BackgroundMessage.Listener)
 
@@ -167,6 +173,6 @@ chrome.permissions.onAdded.addListener((perms) => {
  */
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === 'ip-auto-config') {
-    reIpAutoConfig()
+    reIpInfo()
   }
 })
