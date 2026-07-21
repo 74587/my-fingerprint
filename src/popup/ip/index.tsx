@@ -12,13 +12,21 @@ export const IpModulePanel = ({ }: {}) => {
   const [t] = useTranslation()
   const [currentInfo, setCurrentInfo] = useState<LocalStorageConfig['input']['ipInfo']>()
 
-  const { config, saveConfig } = useStorageStore(useShallow((s) => ({
+  const { config, saveConfig, saveConfigAsync } = useStorageStore(useShallow((s) => ({
     version: s.version,
     config: s.config,
     saveConfig: s.saveConfig,
+    saveConfigAsync: s.saveConfigAsync,
   })))
   const action = config?.action.ipInfo;
   const input = currentInfo ?? config?.input.ipInfo;
+
+  const changeEnable = async (checked: boolean) => {
+    if (!action) return;
+    action.enable = checked;
+    await saveConfigAsync();
+    await reIpInfo();
+  }
 
   const reIpInfo = async () => {
     const info = await sendToBackground({
@@ -36,13 +44,7 @@ export const IpModulePanel = ({ }: {}) => {
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
         checked={action.enable}
-        onChange={(checked) => {
-          if (action.enable !== checked) {
-            action.enable = checked
-            saveConfig()
-            reIpInfo()
-          }
-        }}
+        onChange={changeEnable}
       />
     </div>
 

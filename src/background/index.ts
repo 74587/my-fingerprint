@@ -69,16 +69,22 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       return true
     }
     case 'config.set': {
-      updateContext({ config: msg.config })
-      return false
+      updateContext({ config: msg.config }).finally(() => {
+        sendResponse<'config.set'>(undefined)
+      })
+      return true
     }
     case 'policies.set': {
-      updateContext({ policies: msg.policies })
-      return false
+      updateContext({ policies: msg.policies }).finally(() => {
+        sendResponse<'config.set'>(undefined)
+      })
+      return true
     }
     case 'version.latest': {
       getNewVersion().then((version) => {
         sendResponse<'version.latest'>(version)
+      }).catch(() => {
+        sendResponse<'version.latest'>(undefined)
       })
       return true
     }
