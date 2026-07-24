@@ -32,13 +32,14 @@ export const reIpInfo = sharedAsync(async () => {
   const { storage } = await getLocalStorage()
 
   const fp = storage.config.fp
-  const ipAuto = storage.config.action.ipInfo;
+  const ipInfoAction = storage.config.action.ipInfo;
+  const ipInfoInput = storage.config.input.ipInfo;
 
   let isUpdate = false
   const nextFp = {} as DeepPartial<HookFingerprint>
   const nextInput = {} as DeepPartial<LocalStorageConfig['input']>
 
-  if (ipAuto.enable) {
+  if (ipInfoAction.enable) {
     /* Enable */
     isUpdate = true
     const ipData = await IpApi.getIp()
@@ -61,7 +62,7 @@ export const reIpInfo = sharedAsync(async () => {
       createdAt: Date.now(),
     }
 
-    if (ipAuto.enableLanguages && languages) {
+    if (ipInfoAction.enableLanguages && languages) {
       nextFp.navigator = {
         languages: {
           type: HookType.value,
@@ -71,7 +72,7 @@ export const reIpInfo = sharedAsync(async () => {
       }
     }
 
-    if (ipAuto.enableTimezone && timezone && languages) {
+    if (ipInfoAction.enableTimezone && timezone && languages) {
       nextFp.other = {
         timezone: {
           type: HookType.value,
@@ -87,12 +88,12 @@ export const reIpInfo = sharedAsync(async () => {
     logger.info("ReIpInfo Enable", { isUpdate, nextFp, nextInput })
   } else {
     /* Disable */
-    if (nextInput.ipInfo) {
+    if (ipInfoInput) {
       isUpdate = true
       nextInput.ipInfo = null as any;
     }
 
-    if (ipAuto.enableLanguages
+    if (ipInfoAction.enableLanguages
       && fp.navigator.languages.type === HookType.value
       && fp.navigator.languages.tag === alarmName
     ) {
@@ -104,7 +105,7 @@ export const reIpInfo = sharedAsync(async () => {
       }
     }
 
-    if (ipAuto.enableTimezone
+    if (ipInfoAction.enableTimezone
       && fp.other.timezone.type === HookType.value
       && fp.other.timezone.tag === alarmName
     ) {

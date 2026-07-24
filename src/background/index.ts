@@ -68,6 +68,14 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       })
       return true
     }
+    case 'config.get': {
+      getLocalStorage().then(({ storage }) => {
+        sendResponse<'config.get'>(storage.config)
+      }).catch(() => {
+        sendResponse<'config.get'>(undefined)
+      })
+      return true
+    }
     case 'config.set': {
       updateContext({ config: msg.config }).finally(() => {
         sendResponse<'config.set'>(undefined)

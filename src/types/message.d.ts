@@ -15,6 +15,9 @@ declare namespace BackgroundMessage {
       storage?: LocalStorage
     }
   } | {
+    type: 'config.get'
+    $?: LocalStorageConfig
+  } | {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
   } | {

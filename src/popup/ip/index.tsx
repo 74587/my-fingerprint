@@ -12,11 +12,12 @@ export const IpModulePanel = ({ }: {}) => {
   const [t] = useTranslation()
   const [currentInfo, setCurrentInfo] = useState<LocalStorageConfig['input']['ipInfo']>()
 
-  const { config, saveConfig, saveConfigAsync } = useStorageStore(useShallow((s) => ({
+  const { config, saveConfig, saveConfigAsync, reloadConfig } = useStorageStore(useShallow((s) => ({
     version: s.version,
     config: s.config,
     saveConfig: s.saveConfig,
     saveConfigAsync: s.saveConfigAsync,
+    reloadConfig: s.reloadConfig,
   })))
   const action = config?.action.ipInfo;
   const input = currentInfo ?? config?.input.ipInfo;
@@ -33,6 +34,9 @@ export const IpModulePanel = ({ }: {}) => {
       type: 'ip.refresh',
     })
     setCurrentInfo(info)
+    setTimeout(() => {
+      reloadConfig();
+    }, 1000)
   }
 
   return config && action ? <div key={String(!!config)}>
