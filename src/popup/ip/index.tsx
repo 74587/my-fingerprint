@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next"
 import TipIcon from "@/components/data/tip-icon"
 import { sendToBackground } from "@/utils/message"
 import { useState } from "react"
+import { useAsyncApi } from "@/utils/hooks"
 
 export const IpModulePanel = ({ }: {}) => {
   const [t] = useTranslation()
@@ -22,14 +23,10 @@ export const IpModulePanel = ({ }: {}) => {
   const action = config?.action.ipInfo;
   const input = currentInfo ?? config?.input.ipInfo;
 
-  const changeEnable = async (checked: boolean) => {
-    if (!action) return;
-    action.enable = checked;
-    await saveConfigAsync();
-    await reIpInfo();
-  }
-
-  const reIpInfo = async () => {
+  const {
+    api: reIpInfo,
+    isPending,
+  } = useAsyncApi(async () => {
     const info = await sendToBackground({
       type: 'ip.refresh',
     })
@@ -37,6 +34,13 @@ export const IpModulePanel = ({ }: {}) => {
     setTimeout(() => {
       reloadConfig();
     }, 1000)
+  }, [])
+
+  const changeEnable = async (checked: boolean) => {
+    if (!action) return;
+    action.enable = checked;
+    await saveConfigAsync();
+    await reIpInfo();
   }
 
   return config && action ? <div key={String(!!config)}>
@@ -56,7 +60,10 @@ export const IpModulePanel = ({ }: {}) => {
 
     <div>
       <div className="ms-1 mb-2 font-bold">当前 IP 信息</div>
-      <div className="p-1 bg-[--ant-color-bg-container] rounded-lg">
+      <div className="relative p-1 bg-[--ant-color-bg-container] rounded-lg">
+        {isPending && <div className="absolute inset-0 flex justify-center items-center">
+          <Spin indicator={<LoadingOutlined spin />} />
+        </div>}
         <table className="border-separate border-spacing-x-4">
           <tbody className="[&_td:first-child]:text-end [&_td:last-child]:text-start">
             <tr>
