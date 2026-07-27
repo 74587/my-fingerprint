@@ -6,6 +6,7 @@ import { hasUserScripts, reRegisterScript } from "./script";
 import { logManager } from "@/utils/log";
 import { setWebRTCPolicy } from "./privacy";
 import { domainMergeDedup } from "@/utils/url";
+import { reIpInfoAlarm } from "./ip-info";
 
 let mContent: LocalStorageContext | undefined
 
@@ -340,4 +341,5 @@ const onUpdateContext = (_: LocalStorageContext) => {
   saveContextToLocalStorage()
   reRegisterScript()
   reRequestHeader()
+  reIpInfoAlarm()
 }

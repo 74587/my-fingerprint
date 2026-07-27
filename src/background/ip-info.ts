@@ -8,6 +8,8 @@ import { logManager } from "@/utils/log";
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 const alarmName = "ip-auto-config"
+const fetchIntervalMs = 300
+let lastAt = 0
 
 export const reIpInfoAlarm = async () => {
   const { storage } = await getLocalStorage()
@@ -23,6 +25,8 @@ export const reIpInfoAlarm = async () => {
         periodInMinutes: interval,
       });
     }
+  } else {
+    await chrome.alarms.clear(alarmName)
   }
 
   reIpInfo()
@@ -40,6 +44,12 @@ export const reIpInfo = sharedAsync(async () => {
   const nextInput = {} as DeepPartial<LocalStorageConfig['input']>
 
   if (ipInfoAction.enable) {
+    const now = Date.now();
+    if (now - lastAt <= fetchIntervalMs) {
+      return ipInfoInput;
+    }
+    lastAt = now;
+
     /* Enable */
     isUpdate = true
     const ipData = await IpApi.getIp()
