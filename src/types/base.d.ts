@@ -32,6 +32,7 @@ type RandomHookMode = {
 type ValueHookMode<T=any> = {
   type: HookType.value
   value: T
+  tag?: string
 }
 
 type DisableHookMode = {

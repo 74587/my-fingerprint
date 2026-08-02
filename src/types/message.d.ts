@@ -15,6 +15,9 @@ declare namespace BackgroundMessage {
       storage?: LocalStorage
     }
   } | {
+    type: 'config.get'
+    $?: LocalStorageConfig
+  } | {
     type: 'config.set'
     config: DeepPartial<LocalStorageConfig>
   } | {
@@ -41,6 +44,9 @@ declare namespace BackgroundMessage {
     type: 'badge.set'
     text: string
     level: 1 | 2
+  } | {
+    type: 'ip.refresh'
+    $: LocalStorageConfig['input']['ipInfo']
   }
 
   type ResultField = '$'

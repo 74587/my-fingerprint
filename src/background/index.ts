@@ -5,6 +5,7 @@ import { existParentDomain, tryUrl } from "@/utils/base";
 import { reRequestHeader } from "./request";
 import { logManager } from '@/utils/log';
 import { removeBrowsingData } from "./browsing-data";
+import { reIpInfo, reIpInfoAlarm } from "./ip-info";
 
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
@@ -37,7 +38,9 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
  * 重启浏览器触发
  */
 chrome.runtime.onStartup.addListener(() => {
-  initLocalStorage()
+  initLocalStorage().then(() => {
+    reIpInfoAlarm()
+  })
 });
 
 /**
@@ -65,17 +68,31 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       })
       return true
     }
+    case 'config.get': {
+      getLocalStorage().then(({ storage }) => {
+        sendResponse<'config.get'>(storage.config)
+      }).catch(() => {
+        sendResponse<'config.get'>(undefined)
+      })
+      return true
+    }
     case 'config.set': {
-      updateContext({ config: msg.config })
-      return false
+      updateContext({ config: msg.config }).finally(() => {
+        sendResponse<'config.set'>(undefined)
+      })
+      return true
     }
     case 'policies.set': {
-      updateContext({ policies: msg.policies })
-      return false
+      updateContext({ policies: msg.policies }).finally(() => {
+        sendResponse<'config.set'>(undefined)
+      })
+      return true
     }
     case 'version.latest': {
       getNewVersion().then((version) => {
         sendResponse<'version.latest'>(version)
+      }).catch(() => {
+        sendResponse<'version.latest'>(undefined)
       })
       return true
     }
@@ -104,6 +121,12 @@ chrome.runtime.onMessage.addListener(((msg, sender, sendResponse) => {
       if (tabId == null) return;
       setBadgeContent(tabId, msg.text, msg.level)
       return false;
+    }
+    case 'ip.refresh': {
+      reIpInfo().then((v) => {
+        sendResponse<'ip.refresh'>(v)
+      })
+      return true
     }
   }
 }) as BackgroundMessage.Listener)
@@ -156,5 +179,14 @@ chrome.permissions.onAdded.addListener((perms) => {
   logger.info('chrome.permissions.onAdded triggered:', perms)
   if (perms.permissions?.includes('userScripts')) {
     reRegisterScript()
+  }
+})
+
+/**
+ * 定时器
+ */
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name === 'ip-auto-config') {
+    reIpInfo()
   }
 })

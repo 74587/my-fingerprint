@@ -35,13 +35,17 @@ export const debounceByFirstArg = function <T extends (key: any, ...args: any[])
  * debouncedAsync(async()=>{})
  * debouncedAsync(()=>new Promise(...))
  */
-export const sharedAsync = function <T extends (...args: any[]) => Promise<any>>(func: T): (...args: Parameters<T>) => ReturnType<T> {
-  let promise: ReturnType<T> | undefined
-  return function (...args: Parameters<T>): ReturnType<T> {
+export function sharedAsync<A extends any[], R>(
+  func: (...args: A) => Promise<R>
+): (...args: A) => Promise<R> {
+  let promise: Promise<R> | undefined
+  return (...args: A): Promise<R> => {
     if (promise) {
-      return promise
+      return promise;
     }
-    promise = func(...args).finally(() => promise = undefined) as ReturnType<T>
-    return promise
+    promise = func(...args).finally(() => {
+      promise = undefined;
+    })
+    return promise;
   }
 }

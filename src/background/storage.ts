@@ -6,6 +6,7 @@ import { hasUserScripts, reRegisterScript } from "./script";
 import { logManager } from "@/utils/log";
 import { setWebRTCPolicy } from "./privacy";
 import { domainMergeDedup } from "@/utils/url";
+import { reIpInfoAlarm } from "./ip-info";
 
 let mContent: LocalStorageContext | undefined
 
@@ -57,6 +58,12 @@ export const genDefaultLocalStorage = (): LocalStorage => {
       },
       action: {
         fastInject: hasUserScripts() ? true : false,
+        ipInfo: {
+          enable: false,
+          intervalMin: 1,
+          enableTimezone: true,
+          enableLanguages: true,
+        },
       },
       input: {
         globalSeed: String(sGlobal),
@@ -334,4 +341,5 @@ const onUpdateContext = (_: LocalStorageContext) => {
   saveContextToLocalStorage()
   reRegisterScript()
   reRequestHeader()
+  reIpInfoAlarm()
 }

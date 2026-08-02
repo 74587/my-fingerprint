@@ -18,10 +18,23 @@ type LocalStorageConfig = {
   // 操作
   action: {
     fastInject: boolean
+    ipInfo: {
+      enable: boolean
+      intervalMin: number
+      enableTimezone: boolean
+      enableLanguages: boolean
+    }
   }
   // 输入
   input: {
     globalSeed: string
+    ipInfo?: {
+      ip: string
+      countryCode: string
+      timezone: string
+      languages?: string[]
+      createdAt: number
+    }
   }
   // 订阅
   subscribe: {

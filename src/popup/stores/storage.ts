@@ -15,6 +15,8 @@ type Actions = {
   importStorage: (data: DeepPartial<LocalStorage>) => Promise<void>
   saveConfig: () => void
   savePolicies: () => void
+  saveConfigAsync: () => Promise<void>
+  reloadConfig: () => Promise<void>
 }
 
 export const useStorageStore = create<State & Actions>(((set, get) => {
@@ -81,6 +83,33 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     }))
   }
 
+  const saveConfigAsync = async () => {
+    const v = get().config;
+    if (v) {
+      await sendToBackground({
+        type: 'config.set',
+        config: v,
+      })
+    }
+    set(({ version }) => ({
+      version: version + 1,
+    }))
+  }
+
+  const reloadConfig = async () => {
+    const { storage } = get()
+    const next = await sendToBackground({
+      type: 'config.get',
+    })
+    if (next && storage) {
+      storage.config = next;
+      set(({ version }) => ({
+        config: next,
+        version: version + 1,
+      }))
+    }
+  }
+
   return {
     version: 0,
 
@@ -88,5 +117,7 @@ export const useStorageStore = create<State & Actions>(((set, get) => {
     importStorage,
     saveConfig,
     savePolicies,
+    saveConfigAsync,
+    reloadConfig,
   }
 }))
