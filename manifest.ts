@@ -69,6 +69,9 @@ export const firefoxManifest: ManifestV3Export = {
       strict_min_version: "136.0",
     }
   },
+  content_security_policy: {
+    "extension_pages": "script-src 'self';"
+  },
   permissions: [
     'storage',
     'tabs',
