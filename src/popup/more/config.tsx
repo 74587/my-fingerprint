@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/shallow";
 import { useStorageStore } from "../stores/storage";
 import VariablePopconfirm from "@/components/feedback/var-popconfirm";
+import { requestPermission } from "@/utils/browser";
 
 export type MoreConfigViewProps = {
   className?: string
@@ -21,14 +22,18 @@ export const MoreConfigView = ({ className }: MoreConfigViewProps) => {
     importStorage: s.importStorage
   })))
 
-  const clipboardExport = () => {
-    navigator.clipboard.writeText(JSON.stringify(storage, null, 2))
+  const clipboardExport = async () => {
+    await requestPermission('clipboardWrite')
+
+    await navigator.clipboard.writeText(JSON.stringify(storage, null, 2))
       .then(() => message.success(t('tip.config.export-ok')))
       .catch((err) => message.error(`${t('tip.config.export-fail')}: ${err?.message}`))
   }
+   
+  const clipboardImport = async () => {
+    await requestPermission('clipboardRead')
 
-  const clipboardImport = () => {
-    navigator.clipboard.readText()
+    await navigator.clipboard.readText()
       .then(async (text) => {
         const data = JSON.parse(text)
         if (typeof data !== 'object') {

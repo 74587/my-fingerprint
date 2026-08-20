@@ -47,6 +47,8 @@ export const chromeManifest: ManifestV3Export = {
   optional_permissions: [
     "userScripts",
     'browsingData',
+    'clipboardRead',
+    'clipboardWrite',
   ],
   background: {
     service_worker: VALUES.background,
@@ -85,6 +87,8 @@ export const firefoxManifest: ManifestV3Export = {
   optional_permissions: [
     "userScripts",
     'browsingData',
+    'clipboardRead',
+    'clipboardWrite',
   ],
   background: {
     scripts: [VALUES.background],
