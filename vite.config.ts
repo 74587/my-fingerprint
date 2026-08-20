@@ -35,6 +35,7 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
+    modulePreload: false,
     minify: isNoMinify ? false : 'esbuild',
     // sourcemap: (isFirefox && isNoMinify) ? true : undefined,
     outDir: isFirefox ? 'dist-firefox' : 'dist',
