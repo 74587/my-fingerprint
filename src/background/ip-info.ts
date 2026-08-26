@@ -8,7 +8,7 @@ import { logManager } from "@/utils/log";
 const logger = logManager.createLogger(__LOG_PREFIX_FILE_PATH__);
 
 const alarmName = "ip-auto-config"
-const fetchIntervalMs = 300
+const fetchIntervalMs = 1000
 let lastAt = 0
 
 export const reIpInfoAlarm = async () => {
@@ -32,16 +32,76 @@ export const reIpInfoAlarm = async () => {
   reIpInfo()
 }
 
-export const reIpInfo = sharedAsync(async () => {
+const makeNavigatorConfig = (storage: LocalStorage, languages?: string[]) => {
+  const fp = storage.config.fp
+  const action = storage.config.action.ipInfo;
+
+  if (action.enable && action.enableLanguages && languages) {
+    return {
+      navigator: {
+        languages: {
+          type: HookType.value as HookType.value,
+          value: languages,
+          tag: alarmName,
+        }
+      }
+    }
+  }
+
+  if (
+    (!action.enable || !action.enableLanguages)
+    && fp.navigator.languages.type === HookType.value
+    && fp.navigator.languages.tag === alarmName
+  ) {
+    return {
+      navigator: {
+        languages: {
+          type: HookType.default as HookType.default,
+        }
+      }
+    }
+  }
+}
+
+const makeTimezoneConfig = (storage: LocalStorage, timezone?: string, languages?: string[]) => {
+  const fp = storage.config.fp
+  const action = storage.config.action.ipInfo;
+
+  if (action.enable && action.enableTimezone && timezone && languages) {
+    return {
+      other: {
+        timezone: {
+          type: HookType.value as HookType.value,
+          value: {
+            zone: timezone,
+            locales: languages,
+          },
+          tag: alarmName,
+        }
+      }
+    }
+  }
+
+  if (
+    (!action.enable || !action.enableTimezone)
+    && fp.other.timezone.type === HookType.value
+    && fp.other.timezone.tag === alarmName
+  ) {
+    return {
+      other: {
+        timezone: {
+          type: HookType.default as HookType.default,
+        }
+      }
+    }
+  }
+}
+
+export const reIpInfo = sharedAsync(async (): Promise<LocalStorageConfig['input']['ipInfo']> => {
   const { storage } = await getLocalStorage()
 
-  const fp = storage.config.fp
   const ipInfoAction = storage.config.action.ipInfo;
   const ipInfoInput = storage.config.input.ipInfo;
-
-  let isUpdate = false
-  const nextFp = {} as DeepPartial<HookFingerprint>
-  const nextInput = {} as DeepPartial<LocalStorageConfig['input']>
 
   if (ipInfoAction.enable) {
     const now = Date.now();
@@ -51,7 +111,6 @@ export const reIpInfo = sharedAsync(async () => {
     lastAt = now;
 
     /* Enable */
-    isUpdate = true
     const ipData = await IpApi.getIp()
 
     let languages: string[] | undefined = undefined
@@ -64,7 +123,7 @@ export const reIpInfo = sharedAsync(async () => {
       timezone = ipData.timezone
     }
 
-    nextInput.ipInfo = {
+    const ipInfo = {
       ip: ipData.query,
       countryCode: ipData.countryCode,
       timezone: ipData.timezone,
@@ -72,72 +131,46 @@ export const reIpInfo = sharedAsync(async () => {
       createdAt: Date.now(),
     }
 
-    if (ipInfoAction.enableLanguages && languages) {
-      nextFp.navigator = {
-        languages: {
-          type: HookType.value,
-          value: languages,
-          tag: alarmName,
-        }
-      }
-    }
+    console.log({
+      ...makeNavigatorConfig(storage, languages),
+      ...makeTimezoneConfig(storage, timezone, languages),
+    });
 
-    if (ipInfoAction.enableTimezone && timezone && languages) {
-      nextFp.other = {
-        timezone: {
-          type: HookType.value,
-          value: {
-            zone: timezone,
-            locales: languages,
-          },
-          tag: alarmName,
-        }
-      }
-    }
-
-    logger.info("ReIpInfo Enable", { isUpdate, nextFp, nextInput })
-  } else {
-    /* Disable */
-    if (ipInfoInput) {
-      isUpdate = true
-      nextInput.ipInfo = null as any;
-    }
-
-    if (ipInfoAction.enableLanguages
-      && fp.navigator.languages.type === HookType.value
-      && fp.navigator.languages.tag === alarmName
-    ) {
-      isUpdate = true
-      nextFp.navigator = {
-        languages: {
-          type: HookType.default,
-        }
-      }
-    }
-
-    if (ipInfoAction.enableTimezone
-      && fp.other.timezone.type === HookType.value
-      && fp.other.timezone.tag === alarmName
-    ) {
-      isUpdate = true
-      nextFp.other = {
-        timezone: {
-          type: HookType.default,
-        }
-      }
-    }
-
-    logger.info("ReIpInfo Disable", { isUpdate, nextFp, nextInput })
-  }
-
-  if (isUpdate) {
     updateContext({
       config: {
-        fp: nextFp,
-        input: nextInput,
+        fp: {
+          ...makeNavigatorConfig(storage, languages),
+          ...makeTimezoneConfig(storage, timezone, languages),
+        },
+        input: {
+          ipInfo,
+        },
       }
     })
-  }
 
-  return nextInput.ipInfo as LocalStorageConfig['input']['ipInfo'];
+    logger.info("ReIpInfo Enable")
+
+    return ipInfo;
+  } else {
+    /* Disable */
+    const nextFp = {
+      ...makeNavigatorConfig(storage),
+      ...makeTimezoneConfig(storage),
+    }
+
+    if (ipInfoInput || Object.keys(nextFp).length > 0) {
+      updateContext({
+        config: {
+          fp: nextFp,
+          input: {
+            ipInfo: null as any,
+          },
+        }
+      })
+    }
+
+    logger.info("ReIpInfo Disable")
+
+    return undefined;
+  }
 })

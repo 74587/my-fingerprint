@@ -107,10 +107,11 @@ export const IpModulePanel = ({ }: {}) => {
           <Switch
             className="[&_.ant-switch-inner>span]:font-bold"
             checked={action.enableLanguages}
-            onChange={(checked) => {
+            onChange={async (checked) => {
               if (action.enableLanguages !== checked) {
                 action.enableLanguages = checked
-                saveConfig()
+                await saveConfigAsync();
+                await reIpInfo();
               }
             }}
           />
@@ -123,10 +124,11 @@ export const IpModulePanel = ({ }: {}) => {
           <Switch
             className="[&_.ant-switch-inner>span]:font-bold"
             checked={action.enableTimezone}
-            onChange={(checked) => {
+            onChange={async (checked) => {
               if (action.enableTimezone !== checked) {
                 action.enableTimezone = checked
-                saveConfig()
+                await saveConfigAsync();
+                await reIpInfo();
               }
             }}
           />
