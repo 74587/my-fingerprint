@@ -54,6 +54,10 @@
       "other": "Other"
     },
     "preset-panel": "Preset Panel",
+    "policies": {
+      "exclude-only": "Only Exclude Listed Sites",
+      "inject-only": "Only Inject Listed Sites"
+    },
     "whitelist": {
       "in": "In Whitelist",
       "not": "Not In Whitelist",

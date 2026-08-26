@@ -54,6 +54,10 @@
       "other": "其他"
     },
     "preset-panel": "预设面板",
+    "policies": {
+      "exclude-only": "仅排除网站列表",
+      "inject-only": "仅注入网站列表"
+    },
     "whitelist": {
       "in": "在白名单中",
       "not": "不在白名单",

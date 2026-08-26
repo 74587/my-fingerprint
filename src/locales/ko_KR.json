@@ -54,6 +54,10 @@
       "other": "기타"
     },
     "preset-panel": "프리셋 패널",
+    "policies": {
+      "exclude-only": "목록에 있는 사이트만 제외",
+      "inject-only": "목록에 있는 사이트만 주입"
+    },
     "whitelist": {
       "in": "화이트리스트에 있음",
       "not": "화이트리스트에 없음",

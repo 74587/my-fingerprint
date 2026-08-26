@@ -99,14 +99,14 @@ export const PoliciesView = (props: WhitelistProps) => {
         color={!policies?.isBlacklistMode ? 'primary' : 'default'}
         variant={!policies?.isBlacklistMode ? 'solid' : 'outlined'}
         onClick={() => switchIsBlacklistMode(false)}>
-        仅排除网站列表
+        {t('label.policies.exclude-only')}
       </Button>
       <Button
         className="grow"
         color={policies?.isBlacklistMode ? 'primary' : 'default'}
         variant={policies?.isBlacklistMode ? 'solid' : 'outlined'}
         onClick={() => switchIsBlacklistMode(true)}>
-        仅注入网站列表
+        {t('label.policies.inject-only')}
       </Button>
     </div>
     <div className="h-full flex flex-col rounded-lg bg-[--ant-color-bg-container]">
