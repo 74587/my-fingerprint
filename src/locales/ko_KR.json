@@ -25,7 +25,11 @@
     "seed": "시드",
     "more": "더 보기",
     "fp-record": "핑거프린트",
-    "iframe-record": "Iframe"
+    "iframe-record": "Iframe",
+    "ip-module": "IP 모듈",
+    "blacklist": "블랙리스트",
+    "blacklist-in": "블랙리스트에 있음",
+    "blacklist-click-in": "클릭하여 블랙리스트에 추가"
   },
   "label": {
     "config-file": "설정 파일",
@@ -64,7 +68,20 @@
       "standard": "표준시",
       "daylight": "일광 절약 시간제"
     },
-    "json": "Json 형식"
+    "json": "Json 형식",
+    "ip": {
+      "title": "IP 모듈",
+      "desc": "활성화하면 현재 IP 주소를 기반으로 관련 매개변수가 자동으로 구성됩니다",
+      "current": "현재 IP 정보",
+      "field": {
+        "ip": "IP 주소",
+        "countryCode": "국가 코드",
+        "timezone": "시간대",
+        "languages": "언어",
+        "createdAt": "조회 시간"
+      },
+      "refresh": "새로고침"
+    }
   },
   "type": {
     "default": "기본값",
@@ -104,7 +121,12 @@
       "theme": "테마",
       "log-level": "로그 레벨",
       "seed": "전역 시드",
-      "fast-inject": "빠른 주입 모드"
+      "fast-inject": "빠른 주입 모드",
+      "ip-module": {
+        "enable": "활성화",
+        "enable-languages": "언어 자동 구성",
+        "enable-timezone": "시간대 자동 구성"
+      }
     },
     "desc": {
       "clientHints": [

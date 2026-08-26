@@ -46,8 +46,8 @@ export const IpModulePanel = ({ }: {}) => {
   return config && action ? <div key={String(!!config)}>
     <div className="p-1 flex items-center justify-between">
       <div>
-        <span className="font-bold">IP 模块</span>
-        <p className="text-default-500">开启后，将根据当前 IP 地址自动配置相关参数</p>
+        <span className="font-bold">{t('label.ip.title')}</span>
+        <p className="text-default-500">{t('label.ip.desc')}</p>
       </div>
       <Switch
         className="[&_.ant-switch-inner>span]:font-bold"
@@ -59,7 +59,7 @@ export const IpModulePanel = ({ }: {}) => {
     <hr className="my-2 text-default-200" />
 
     <div>
-      <div className="ms-1 mb-2 font-bold">当前 IP 信息</div>
+      <div className="ms-1 mb-2 font-bold">{t('label.ip.current')}</div>
       <div className="relative p-1 bg-[--ant-color-bg-container] rounded-lg">
         {isPending && <div className="absolute inset-0 flex justify-center items-center">
           <Spin indicator={<LoadingOutlined spin />} />
@@ -67,30 +67,30 @@ export const IpModulePanel = ({ }: {}) => {
         <table className="border-separate border-spacing-x-4">
           <tbody className="[&_td:first-child]:text-end [&_td:last-child]:text-start">
             <tr>
-              <td>IP 地址</td>
+              <td>{t('label.ip.field.ip')}</td>
               <td>{input?.ip ?? '--'}</td>
             </tr>
             <tr>
-              <td>国家代码</td>
+              <td>{t('label.ip.field.countryCode')}</td>
               <td>{input?.countryCode ?? '--'}</td>
             </tr>
             <tr>
-              <td>时区</td>
+              <td>{t('label.ip.field.timezone')}</td>
               <td>{input?.timezone ?? '--'}</td>
             </tr>
             <tr>
-              <td>语言</td>
+              <td>{t('label.ip.field.languages')}</td>
               <td>{input?.languages?.join(', ') ?? '--'}</td>
             </tr>
             <tr>
-              <td>获取时间</td>
+              <td>{t('label.ip.field.createdAt')}</td>
               <td>{input?.createdAt ? new Date(input.createdAt).toLocaleString() : '--'}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div className="mt-2 flex justify-end">
-        <Button onClick={reIpInfo}>重新获取</Button>
+        <Button onClick={reIpInfo}>{t('label.ip.refresh')}</Button>
       </div>
     </div>
 

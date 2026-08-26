@@ -25,7 +25,11 @@
     "seed": "Seed",
     "more": "More",
     "fp-record": "Fingerprint",
-    "iframe-record": "Iframe"
+    "iframe-record": "Iframe",
+    "ip-module": "IP Module",
+    "blacklist": "Blacklist",
+    "blacklist-in": "In Blacklist",
+    "blacklist-click-in": "Click To Blacklist"
   },
   "label": {
     "config-file": "Config File",
@@ -64,7 +68,20 @@
       "standard": "Standard",
       "daylight": "Daylight"
     },
-    "json": "Json Format"
+    "json": "Json Format",
+    "ip": {
+      "title": "IP Module",
+      "desc": "When enabled, related parameters will be automatically configured based on the current IP address",
+      "current": "Current IP Info",
+      "field": {
+        "ip": "IP Address",
+        "countryCode": "Country Code",
+        "timezone": "Timezone",
+        "languages": "Languages",
+        "createdAt": "Fetched At"
+      },
+      "refresh": "Refresh"
+    }
   },
   "type": {
     "default": "Default",
@@ -104,7 +121,12 @@
       "theme": "Theme",
       "log-level": "Log Level",
       "seed": "Global Seed",
-      "fast-inject": "Fast Inject Mode"
+      "fast-inject": "Fast Inject Mode",
+      "ip-module": {
+        "enable": "Enable",
+        "enable-languages": "Auto Configure Languages",
+        "enable-timezone": "Auto Configure Timezone"
+      }
     },
     "desc": {
       "clientHints": [

@@ -68,7 +68,20 @@
       "standard": "标准时",
       "daylight": "夏令时"
     },
-    "json": "Json格式"
+    "json": "Json格式",
+    "ip": {
+      "title": "IP 模块",
+      "desc": "开启后，将根据当前 IP 地址自动配置相关参数",
+      "current": "当前 IP 信息",
+      "field": {
+        "ip": "IP 地址",
+        "countryCode": "国家代码",
+        "timezone": "时区",
+        "languages": "语言",
+        "createdAt": "获取时间"
+      },
+      "refresh": "重新获取"
+    }
   },
   "type": {
     "default": "系统值",
