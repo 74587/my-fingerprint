@@ -11,22 +11,45 @@ const alarmName = "ip-auto-config"
 const fetchIntervalMs = 1000
 let lastAt = 0
 
-export const reIpInfoAlarm = async () => {
-  const { storage } = await getLocalStorage()
-  const options = storage.config?.action?.ipInfo ?? {};
+/**
+ * 处理 ipInfo 配置
+ */
+export const reIpInfoAlarm = async (prev?: DeepPartial<LocalStorage>, next?: DeepPartial<LocalStorage>) => {
+  if (prev && next) {
+    const nfp = next.config?.fp
 
-  if (options.enable) {
-    const interval = options.intervalMin || 1;
-    const alarm = await chrome.alarms.get(alarmName)
-
-    if (!alarm || alarm.periodInMinutes !== interval) {
-      await chrome.alarms.create(alarmName, {
-        delayInMinutes: interval,
-        periodInMinutes: interval,
-      });
+    if (nfp?.navigator?.languages?.tag === alarmName || nfp?.other?.timezone?.tag === alarmName) {
+      return;
     }
-  } else {
-    await chrome.alarms.clear(alarmName)
+
+    const pinfo = prev.config?.action?.ipInfo
+    const ninfo = next.config?.action?.ipInfo
+
+    if (!pinfo && !ninfo) {
+      return;
+    }
+
+    if (
+      (!pinfo || !ninfo) ||
+      pinfo.enable !== ninfo.enable ||
+      pinfo.intervalMin !== ninfo.intervalMin ||
+      pinfo.enableTimezone !== ninfo.enableTimezone ||
+      pinfo.enableLanguages !== ninfo.enableLanguages
+    ) {
+      if (ninfo && ninfo.enable) {
+        const interval = ninfo.intervalMin || 1;
+        const alarm = await chrome.alarms.get(alarmName)
+
+        if (!alarm || alarm.periodInMinutes !== interval) {
+          await chrome.alarms.create(alarmName, {
+            delayInMinutes: interval,
+            periodInMinutes: interval,
+          });
+        }
+      } else {
+        await chrome.alarms.clear(alarmName)
+      }
+    }
   }
 
   reIpInfo()

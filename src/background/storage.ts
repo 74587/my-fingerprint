@@ -228,6 +228,8 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
   const ctx = await getLocalStorage()
   const storage = ctx.storage
 
+  const prev = { ...storage }
+
   await onBeforeUpdateContext(ctx, v);
 
   if (v.config) {
@@ -241,9 +243,11 @@ export const updateContext = async (v: DeepPartial<LocalStorage>) => {
     }
   }
 
-  onUpdateContext(ctx)
+  onUpdateContext(ctx, prev, storage)
 
-  return storage
+  return {
+    prev, next: storage,
+  }
 }
 
 /**
@@ -257,42 +261,50 @@ export const importContext = async (data: DeepPartial<LocalStorage>) => {
 
   await onBeforeUpdateContext(ctx, data);
 
+  const conf = {} as DeepPartial<LocalStorage>
+
   if (data.config) {
+    isUpdate = true
     delete data.config.prefs;
     delete data.config.action?.fastInject;
-    await updateContext({ config: data.config })
-    isUpdate = true
+    conf.config = data.config;
   }
 
   if (data.policies?.whitelist?.length !== 0 || (data as any)?.whitelist?.length !== 0) {
-    storage.policies.whitelist = domainMergeDedup(
-      storage.policies.whitelist,
-      data.policies?.whitelist,
-      (data as any).whitelist,
-    );
     isUpdate = true
+    conf.policies = {
+      ...conf.policies,
+      whitelist: domainMergeDedup(
+        storage.policies.whitelist,
+        data.policies?.whitelist,
+        (data as any).whitelist,
+      ),
+    }
   }
 
   if (data.policies?.blacklist?.length !== 0 || (data as any)?.blacklist?.length !== 0) {
-    storage.policies.blacklist = domainMergeDedup(
-      storage.policies.blacklist,
-      data.policies?.blacklist,
-      (data as any).blacklist,
-    );
     isUpdate = true
+    conf.policies = {
+      ...conf.policies,
+      blacklist: domainMergeDedup(
+        storage.policies.blacklist,
+        data.policies?.blacklist,
+        (data as any).blacklist,
+      ),
+    }
   }
 
   if (data.policies?.isBlacklistMode != null && storage.policies.isBlacklistMode !== data.policies.isBlacklistMode) {
-    await updateContext({
-      policies: {
-        isBlacklistMode: data.policies.isBlacklistMode
-      }
-    })
     isUpdate = true
+    conf.policies = {
+      ...conf.policies,
+      isBlacklistMode: data.policies.isBlacklistMode
+    }
   }
 
   if (isUpdate) {
-    onUpdateContext(ctx)
+    const { prev, next } = await updateContext(conf)
+    onUpdateContext(ctx, prev, next)
   }
 
   return storage;
@@ -313,6 +325,7 @@ const onAfterInit = async ({ storage }: LocalStorageContext) => {
  * @param obj 新配置
  */
 const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: DeepPartial<LocalStorage>) => {
+  /** 日志等级 */
   const logLevel = obj.config?.prefs?.logLevel;
   if (logLevel && logLevel !== storage.config.prefs.logLevel) {
     logManager.setLevel(logLevel);
@@ -337,9 +350,9 @@ const onBeforeUpdateContext = async ({ storage }: LocalStorageContext, obj: Deep
 /**
  * 更新配置
  */
-const onUpdateContext = (_: LocalStorageContext) => {
+const onUpdateContext = (_: LocalStorageContext, prev?: DeepPartial<LocalStorage>, next?: DeepPartial<LocalStorage>) => {
   saveContextToLocalStorage()
   reRegisterScript()
   reRequestHeader()
-  reIpInfoAlarm()
+  reIpInfoAlarm(prev, next)
 }

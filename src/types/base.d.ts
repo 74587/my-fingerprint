@@ -23,10 +23,12 @@ declare enum HookType {
 
 type DefaultHookMode = {
   type: HookType.default
+  tag?: string
 }
 
 type RandomHookMode = {
   type: HookType.page | HookType.browser | HookType.domain | HookType.global
+  tag?: string
 }
 
 type ValueHookMode<T=any> = {
@@ -37,10 +39,12 @@ type ValueHookMode<T=any> = {
 
 type DisableHookMode = {
   type: HookType.disabled
+  tag?: string
 }
 
 type EnableHookMode = {
   type: HookType.enabled
+  tag?: string
 }
 
 type HookMode<T=any> = DefaultHookMode | RandomHookMode | ValueHookMode<T> | DisableHookMode | EnableHookMode
