@@ -3,6 +3,7 @@ import { debounce } from "@/utils/timer";
 import { AutoComplete, AutoCompleteProps, Button, Divider, Space, Spin, Tag } from "antd";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  CheckOutlined,
   LoadingOutlined,
   PlusOutlined
 } from '@ant-design/icons';
@@ -72,10 +73,21 @@ const FontInfo = () => {
 const FontList = () => {
   const { t } = useTranslation()
   const { action, blockFont, resetAllowlist } = useFontGroup()
+  const [isReset, setIsReset] = useState(false)
+
+  const doReset = async () => {
+    await resetAllowlist()
+    setIsReset(true)
+    setTimeout(() => setIsReset(false), 1500)
+  }
 
   return <div className="h-36 overflow-auto">
     <div className="h-full flex flex-wrap gap-1 content-start text-xs">
-      <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100" onClick={resetAllowlist}>{t('g.reset')}</Tag>
+      {isReset ? (
+        <Tag className="mx-0 px-2 py-0.5 rounded-xl bg-default-200"><CheckOutlined /></Tag>
+      ) : (
+        <Tag className="mx-0 px-2 py-0.5 cursor-pointer rounded-xl bg-warning-50 hover:bg-warning-100" onClick={doReset}>{t('g.reset')}</Tag>
+      )}
       {action?.allowlist.map((v) => (
         <Tag key={v} className="mx-0 px-2 py-0.5 rounded-xl" closeIcon onClose={() => blockFont(v)}>{v}</Tag>
       ))}
